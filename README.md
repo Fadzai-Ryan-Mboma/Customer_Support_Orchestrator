@@ -90,8 +90,8 @@ The system consists of:
 
 ## 📱 Supported Channels
 
-- **Telegram**: Bot API integration (✅ Active)
-- **Email**: SMTP/IMAP with auto-polling (⚠️ Needs credentials)
+- **Telegram**: Bot API integration
+- **Email**: SMTP/IMAP with auto-polling
 - **Webhook API**: Unified processing for all channels
 
 ## 🧪 Testing
