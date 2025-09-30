@@ -1,0 +1,81 @@
+# Cassava AI Support Orchestrator - POC Configuration
+# Includes: Mistral AI, Ollama, Telegram, Email support only
+# Simplified configuration for proof-of-concept testing
+
+services:
+  cassava-ai-poc:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: cassava-ai-poc
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    environment:
+      # Core POC Configuration
+      - ENVIRONMENT=${ENVIRONMENT:-poc}
+      - DEBUG=${DEBUG:-true}
+      - APP_HOST=${APP_HOST:-0.0.0.0}
+      - APP_PORT=${APP_PORT:-8000}
+      
+      # AI/LLM Services (Hardcoded for POC)
+      - MISTRAL_API_KEY=YFRSBgX6weJXLOrb7Hg2oy89Mc11fPa5
+      - MISTRAL_MODEL=mistral-large-latest
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_MODEL=llama2
+      
+      # Communication Channels (Hardcoded for POC)
+      - TELEGRAM_BOT_TOKEN=8333904820:AAFG6VzQ_qsISw9h8650D6Pdi2iokKKb6do
+      - TELEGRAM_WEBHOOK_URL=https://your-domain.com/api/v1/webhook/telegram
+      - EMAIL_SMTP_HOST=smtp.gmail.com
+      - EMAIL_SMTP_PORT=587
+      - EMAIL_USERNAME=your-email@gmail.com
+      - EMAIL_PASSWORD=your-app-password
+      - EMAIL_IMAP_HOST=imap.gmail.com
+      - EMAIL_IMAP_PORT=993
+      
+      # Basic Security & Logging
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-dev-secret-key}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:8000,http://127.0.0.1:8000}
+    volumes:
+      - cassava_poc_data:/app/data
+      - cassava_poc_logs:/app/logs
+      - ./backend:/app  # Mount backend source code for development
+      - ./frontend:/app/static  # Mount frontend files
+      - ./img:/app/img  # Mount image assets
+    networks:
+      - poc_network
+    depends_on:
+      - ollama-ai
+    restart: unless-stopped
+
+  # Local AI Model Service (Ollama)
+  ollama-ai:
+    image: ollama/ollama:latest
+    container_name: ollama-ai-poc
+    ports:
+      - "11434:11434"
+    volumes:
+      - cassava_ollama_models:/root/.ollama
+    environment:
+      - OLLAMA_KEEP_ALIVE=24h
+      - OLLAMA_HOST=0.0.0.0
+    networks:
+      - poc_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    # No custom command - let Ollama start normally
+
+networks:
+  poc_network:
+    driver: bridge
+
+volumes:
+  cassava_poc_data:
+  cassava_poc_logs:
+  cassava_ollama_models:

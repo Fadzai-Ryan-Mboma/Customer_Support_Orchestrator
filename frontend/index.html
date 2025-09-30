@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cassava AI - Customer Support Dashboard</title>
+    <style>
+        :root {
+            /* Cassava Brand Colors */
+            --cassava-blue: #1B365D;
+            --cassava-green: #00E5A0;
+            --cassava-green-hover: #00D094;
+            --cassava-green-light: #4DEFB8;
+            
+            /* Accent Colors - Light mode: Blue accent */
+            --accent-color: var(--cassava-blue);
+            --accent-light: #e8f0ff;
+            --accent-hover: #153555;
+            
+            /* Theme Colors - Light mode uses Cassava blue for text/edges */
+            --bg-color: #f8f9fa;
+            --text-color: var(--cassava-blue);
+            --text-secondary: #3a5a87;
+            --text-muted: #6c8bb5;
+            --card-bg: white;
+            --border-color: var(--cassava-blue);
+            --border-light: rgba(27, 54, 93, 0.2);
+            --shadow: rgba(27, 54, 93, 0.1);
+        }
+
+        body.dark-theme {
+            /* Dark mode: Green accent */
+            --accent-color: var(--cassava-green);
+            --accent-light: rgba(0, 229, 160, 0.1);
+            --accent-hover: var(--cassava-green-hover);
+            
+            --bg-color: #1a1a1a;
+            --text-color: #e0e0e0;
+            --card-bg: #2d2d2d;
+            --border-color: #444;
+            --shadow: rgba(0,0,0,0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--bg-color);
+            min-height: 100vh;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-color);
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--card-bg);
+            border-radius: 15px;
+            box-shadow: 0 2px 10px var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo {
+            width: 160px;
+            height: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: brightness(1);
+            transition: filter 0.3s ease;
+        }
+
+        body.dark-theme .logo img {
+            filter: brightness(1.1) contrast(1.1);
+        }
+
+        .header-title {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header p {
+            margin: 5px 0 0 0;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        body.dark-theme .header p {
+            color: #aaa;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .theme-toggle {
+            background: #e9ecef;
+            border: none;
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .theme-toggle:hover {
+            background: #dee2e6;
+        }
+
+        body.dark-theme .theme-toggle {
+            background: #3d3d3d;
+            color: #e0e0e0;
+        }
+
+        body.dark-theme .theme-toggle:hover {
+            background: #4d4d4d;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 var(--accent-light); }
+            70% { box-shadow: 0 0 0 10px transparent; }
+            100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-light);
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        body.dark-theme .dashboard-card {
+            background: #2d2d2d;
+            border: 1px solid #404040;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        body.dark-theme .dashboard-card:hover {
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .stat-title {
+            font-size: 0.9em;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        body.dark-theme .stat-title {
+            color: #adb5bd;
+        }
+
+        .customer-name {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        body.dark-theme .customer-name {
+            color: #e0e0e0;
+        }
+
+        .conversation-preview {
+            color: var(--text-muted);
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        body.dark-theme .conversation-preview {
+            color: #adb5bd;
+        }
+
+        .conversation-meta {
+            font-size: 0.8em;
+            color: #adb5bd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        body.dark-theme .conversation-meta {
+            color: var(--text-muted);
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        body.dark-theme .stat-value {
+            color: #4ade80;
+        }
+
+        .stat-change {
+            font-size: 0.85em;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .stat-change.positive {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .stat-change.negative {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .conversations-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .conversation-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-light);
+            transition: all 0.3s ease;
+        }
+
+        body.dark-theme .conversation-card {
+            background: #2d2d2d;
+            border: 1px solid #404040;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #28a745;
+        }
+
+        .section-title {
+            color: #28a745;
+            font-size: 1.4em;
+            font-weight: 700;
+        }
+
+        body.dark-theme .section-title {
+            color: #4ade80;
+        }
+
+        body.dark-theme .section-header {
+            border-bottom: 2px solid #4ade80;
+        }
+
+        .refresh-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.2s;
+        }
+
+        .refresh-btn:hover {
+            background: var(--accent-hover);
+        }
+
+        .refresh-btn:hover {
+            background: #218838;
+        }
+
+        .conversation-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            border-left: 4px solid #28a745;
+            transition: all 0.2s;
+        }
+
+        .conversation-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        body.dark-theme .conversation-item {
+            background: #3d3d3d;
+            border-left: 4px solid #4ade80;
+        }
+
+        body.dark-theme .conversation-item:hover {
+            background: #4d4d4d;
+        }
+
+        .conversation-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .customer-name {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .priority-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .priority-high { background: #dc3545; color: white; }
+        .priority-medium { background: #ffc107; color: #333; }
+        .priority-low { background: var(--accent-color); color: white; }
+
+        .conversation-preview {
+            color: var(--text-muted);
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .conversation-meta {
+            font-size: 0.8em;
+            color: #adb5bd;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+
+        .channel-badge {
+            background: var(--accent-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-size: 0.75em;
+            margin-left: 10px;
+        }
+
+        .percentage-badge {
+            background: var(--accent-color);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-weight: bold;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .chart-placeholder {
+            background: var(--accent-light);
+            color: var(--text-secondary);
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 15px;
+            border: 2px dashed var(--border-light);
+        }
+
+        body.dark-theme .chart-placeholder {
+            background: #3d3d3d;
+            color: #adb5bd;
+            border: 2px dashed #6c757d;
+        }
+
+        .loading {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .test-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-light);
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-theme .test-section {
+            background: #2d2d2d;
+            border: 1px solid #404040;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .test-form {
+            display: flex;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .form-group {
+            flex: 1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            font-size: 0.9em;
+            background: white;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #28a745;
+        }
+
+        body.dark-theme .form-group input,
+        body.dark-theme .form-group select {
+            background: #3d3d3d;
+            border: 2px solid #404040;
+            color: #e0e0e0;
+        }
+
+        body.dark-theme .form-group input:focus,
+        body.dark-theme .form-group select:focus {
+            border-color: #4ade80;
+        }
+
+        body.dark-theme .form-group label {
+            color: #e0e0e0;
+        }
+
+        .test-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .test-btn:hover {
+            background: #218838;
+        }
+
+        .test-result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
+        .test-result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .test-result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            .conversations-section {
+                grid-template-columns: 1fr;
+            }
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <div class="logo">
+                    <img id="cassava-logo" src="/img/Cassava-ai_Logo_CassavaAI_Blue.png" alt="Cassava AI Logo">
+                </div>
+                <div class="header-title">
+                    <h1>
+                        Cassava AI Support Orchestrator
+                        <div class="status-indicator"></div>
+                    </h1>
+                    <p>Intelligent Multi-Channel Customer Support</p>
+                </div>
+            </div>
+            <div class="header-controls">
+                <button class="theme-toggle" onclick="toggleTheme()">
+                    <span id="theme-icon">🌙</span>
+                    <span id="theme-text">Dark</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Stats Dashboard -->
+        <div class="dashboard-grid">
+            <div class="dashboard-card">
+                <div class="stat-header">
+                    <div class="stat-title">Active Conversations</div>
+                    <div class="stat-change positive">↑ 8%</div>
+                </div>
+                <div class="stat-value" id="active-conversations">-</div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="stat-header">
+                    <div class="stat-title">SLA Compliance</div>
+                    <div class="stat-change positive">↑ 2.1%</div>
+                </div>
+                <div class="stat-value" id="sla-compliance">-%</div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="stat-header">
+                    <div class="stat-title">Response Time</div>
+                    <div class="stat-change positive">↓ 0.3s</div>
+                </div>
+                <div class="stat-value" id="response-time">-s</div>
+            </div>
+        </div>
+
+        <!-- Conversations Section -->
+        <div class="conversations-section">
+            <div class="conversation-card">
+                <div class="section-header">
+                    <h3 class="section-title">📬 Live Conversations</h3>
+                    <button class="refresh-btn" onclick="refreshConversations()">🔄 Refresh</button>
+                </div>
+                <div id="conversations-list">
+                    <div class="loading">Loading conversations...</div>
+                </div>
+            </div>
+
+            <div class="conversation-card">
+                <div class="section-header">
+                    <h3 class="section-title">📊 Channel Distribution</h3>
+                </div>
+                <div id="channel-stats">
+                    <div class="loading">Loading stats...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Section -->
+        <div class="analytics-grid">
+            <div class="conversation-card">
+                <div class="section-header">
+                    <h3 class="section-title">📈 Weekly Trends</h3>
+                </div>
+                <div class="chart-placeholder">
+                    <h4>Conversation Trends</h4>
+                    <p>Interactive charts coming soon...</p>
+                </div>
+            </div>
+
+            <div class="conversation-card">
+                <div class="section-header">
+                    <h3 class="section-title">🎯 AI Insights</h3>
+                </div>
+                <div id="ai-insights">
+                    <div class="loading">Loading AI insights...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Test Section -->
+        <div class="test-section">
+            <div class="section-header">
+                <h3 class="section-title">🧪 Live AI Test</h3>
+            </div>
+            <div class="test-form">
+                <div class="form-group">
+                    <label for="test-message">Test Message</label>
+                    <input type="text" id="test-message" placeholder="Enter a customer message..." value="My payment failed and I need help urgently!">
+                </div>
+                <div class="form-group">
+                    <label for="test-channel">Channel</label>
+                    <select id="test-channel">
+                        <option value="whatsapp">WhatsApp</option>
+                        <option value="telegram">Telegram</option>
+                        <option value="email">Email</option>
+                        <option value="slack">Slack</option>
+                    </select>
+                </div>
+                <button class="test-btn" onclick="testAI()">🤖 Test AI</button>
+            </div>
+            <div id="test-result"></div>
+        </div>
+    </div>
+
+    <script>
+        // API Base URL
+        const API_BASE = 'http://localhost:8000/api/v1';
+
+        // Load dashboard data
+        async function loadDashboard() {
+            try {
+                // Load analytics
+                const analyticsResponse = await fetch(`${API_BASE}/analytics/dashboard?tenant_id=live_demo&days=7`);
+                const analytics = await analyticsResponse.json();
+                
+                // Update stats
+                document.getElementById('active-conversations').textContent = analytics.metrics.active_conversations;
+                document.getElementById('sla-compliance').textContent = analytics.metrics.sla_compliance + '%';
+                document.getElementById('response-time').textContent = analytics.metrics.avg_response_time_seconds + 's';
+
+                // Load conversations
+                const conversationsResponse = await fetch(`${API_BASE}/conversations/?tenant_id=live_demo`);
+                const conversations = await conversationsResponse.json();
+                
+                displayConversations(conversations.conversations);
+                displayChannelStats(analytics.channel_distribution);
+                displayAIInsights();
+                
+            } catch (error) {
+                console.error('Failed to load dashboard:', error);
+            }
+        }
+
+        function displayConversations(conversations) {
+            const container = document.getElementById('conversations-list');
+            container.innerHTML = '';
+            
+            conversations.forEach(conv => {
+                const item = document.createElement('div');
+                item.className = 'conversation-item';
+                item.innerHTML = `
+                    <div class="conversation-header">
+                        <span class="customer-name">${conv.customer_name}</span>
+                        <span class="priority-badge priority-${conv.priority}">${conv.priority.toUpperCase()}</span>
+                    </div>
+                    <div class="conversation-preview">${conv.last_message}</div>
+                    <div class="conversation-meta">
+                        <span>${conv.created_at}</span>
+                        <span class="channel-badge">${conv.channel}</span>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function displayChannelStats(distribution) {
+            const container = document.getElementById('channel-stats');
+            container.innerHTML = '';
+            
+            Object.entries(distribution).forEach(([channel, percentage]) => {
+                const stat = document.createElement('div');
+                stat.style.cssText = 'background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;';
+                if (document.body.classList.contains('dark-theme')) {
+                    stat.style.cssText = 'background: #3d3d3d; padding: 12px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;';
+                }
+                stat.innerHTML = `
+                    <span style="font-weight: 600; text-transform: capitalize;">${channel}</span>
+                    <span class="percentage-badge">${percentage}%</span>
+                `;
+                container.appendChild(stat);
+            });
+        }
+
+        function displayAIInsights() {
+            const container = document.getElementById('ai-insights');
+            const insights = [
+                '💳 Payment issues up 23% this week',
+                '⚡ Response time improved by 15%', 
+                '😊 Customer satisfaction: 4.7/5',
+                '📱 WhatsApp has highest CSAT (4.9/5)',
+                '🎯 94.2% of tickets resolved within SLA'
+            ];
+            
+            const isDark = document.body.classList.contains('dark-theme');
+            const bgColor = isDark ? '#3d3d3d' : '#f8f9fa';
+            const borderColor = isDark ? '#4ade80' : '#28a745';
+            
+            container.innerHTML = insights.map(insight => 
+                `<div style="background: ${bgColor}; padding: 12px; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid ${borderColor};">${insight}</div>`
+            ).join('');
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('theme-icon');
+            const themeText = document.getElementById('theme-text');
+            const logo = document.getElementById('cassava-logo');
+            
+            body.classList.toggle('dark-theme');
+            
+            if (body.classList.contains('dark-theme')) {
+                themeIcon.textContent = '☀️';
+                themeText.textContent = 'Light';
+                logo.src = '/img/Cassava-ai_Logo_CassavaAI_White.png';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                themeIcon.textContent = '🌙';
+                themeText.textContent = 'Dark';
+                logo.src = '/img/Cassava-ai_Logo_CassavaAI_Blue.png';
+                localStorage.setItem('theme', 'light');
+            }
+            
+            // Refresh channel stats and AI insights to update colors
+            loadDashboard();
+        }
+
+        // Load saved theme
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const logo = document.getElementById('cassava-logo');
+            
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+                document.getElementById('theme-icon').textContent = '☀️';
+                document.getElementById('theme-text').textContent = 'Light';
+                logo.src = '/img/Cassava-ai_Logo_CassavaAI_White.png';
+            } else {
+                logo.src = '/img/Cassava-ai_Logo_CassavaAI_Blue.png';
+            }
+        }
+
+        async function testAI() {
+            const message = document.getElementById('test-message').value;
+            const channel = document.getElementById('test-channel').value;
+            const resultDiv = document.getElementById('test-result');
+            
+            if (!message.trim()) {
+                resultDiv.innerHTML = '<div class="test-result error">Please enter a message to test.</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="test-result">🤖 Processing message with AI...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/test/test`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        customer_id: 'dashboard_test',
+                        channel: channel
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.result.success) {
+                    resultDiv.innerHTML = `
+                        <div class="test-result success">
+                            <strong>✅ AI Processing Success!</strong><br><br>
+                            <strong>🎫 Ticket ID:</strong> ${result.result.ticket_id}<br>
+                            <strong>🤖 Model Used:</strong> ${result.result.model_used}<br>
+                            <strong>📊 Classification:</strong><br>
+                            • Priority: ${result.result.classification.priority}<br>
+                            • Category: ${result.result.classification.category}<br>
+                            • Sentiment: ${result.result.classification.sentiment}<br><br>
+                            <strong>💬 Response:</strong><br>
+                            ${result.result.response}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="test-result error">
+                            <strong>⚠️ AI Processing (Fallback Mode)</strong><br><br>
+                            <strong>💬 Fallback Response:</strong><br>
+                            ${result.result.fallback_response}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="test-result error"><strong>❌ Error:</strong> ${error.message}</div>`;
+            }
+        }
+
+        function refreshConversations() {
+            loadDashboard();
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(loadDashboard, 30000);
+
+        // Load initial data and theme
+        loadTheme();
+        loadDashboard();
+    </script>
+</body>
+</html>
