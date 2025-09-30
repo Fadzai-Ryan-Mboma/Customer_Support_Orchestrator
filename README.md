@@ -55,8 +55,12 @@ docker compose up --build
 - EMAIL_USERNAME=your-email@gmail.com
 - EMAIL_PASSWORD=your-gmail-app-password
 ```
-
-3. API keys are hardcoded for POC (see `docker-compose.poc.yml`)
+3.Credeentials/keys are configured in `.env`
+1. For setup, update credentials/keys in the compose file:
+```yaml
+MISTRAL_API_KEY=your token
+TELEGRAM_BOT_TOKEN=your token
+```
 
 ## 🏃‍♂️ Running the Application
 
@@ -96,15 +100,6 @@ The system consists of:
 - **Test All Channels**: `POST /api/v1/webhooks/channels/test`
 - **Web Dashboard**: http://localhost:8000/ui/
 
-## 🔄 Recent Updates
-
-- ✅ Complete UI overhaul with dark/light theme toggle
-- ✅ Unified channel management system  
-- ✅ Intelligent AI fallback (Mistral → Ollama → Keywords)
-- ✅ Professional Cassava branding with dynamic logos
-- ✅ Clean project structure (backend/frontend/bloat separation)
-- ✅ Email service with auto-polling and threading
-- ✅ Comprehensive diagnostic and testing tools
 
 ## 📄 License
 
