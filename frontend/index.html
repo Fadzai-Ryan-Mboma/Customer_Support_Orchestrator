@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cassava AI - Customer Support Dashboard</title>
+    
+    <!-- Chart.js for interactive charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <style>
         :root {
             /* Cassava Brand Colors */
@@ -424,20 +428,82 @@
             gap: 20px;
         }
 
-        .chart-placeholder {
-            background: var(--accent-light);
-            color: var(--text-secondary);
-            padding: 40px;
-            border-radius: 10px;
-            text-align: center;
+        .charts-container {
             margin-top: 15px;
-            border: 2px dashed var(--border-light);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
-        body.dark-theme .chart-placeholder {
+        .chart-section {
+            background: var(--accent-light);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid var(--border-light);
+            position: relative;
+            height: 400px; /* Fixed height for consistent sizing */
+        }
+
+        .chart-section h4 {
+            margin-bottom: 15px;
+            color: var(--text-color);
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .chart-section canvas {
+            max-width: 100%;
+            height: 350px !important; /* Fixed height for charts */
+            width: 100% !important;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 350px;
+            width: 100%;
+        }
+
+        body.dark-theme .chart-section {
             background: #3d3d3d;
-            color: #adb5bd;
-            border: 2px dashed #6c757d;
+            border: 1px solid #6c757d;
+        }
+
+        body.dark-theme .chart-section h4 {
+            color: #e0e0e0;
+        }
+
+        body.dark-theme .chart-wrapper {
+            background: transparent;
+        }
+
+        /* Responsive chart sizing */
+        @media (max-width: 768px) {
+            .chart-section {
+                height: 320px;
+            }
+            
+            .chart-section canvas {
+                height: 270px !important;
+            }
+            
+            .chart-wrapper {
+                height: 270px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .chart-section {
+                height: 280px;
+                padding: 15px;
+            }
+            
+            .chart-section canvas {
+                height: 230px !important;
+            }
+            
+            .chart-wrapper {
+                height: 230px;
+            }
         }
 
         .loading {
@@ -646,9 +712,25 @@
                 <div class="section-header">
                     <h3 class="section-title">📈 Weekly Trends</h3>
                 </div>
-                <div class="chart-placeholder">
-                    <h4>Conversation Trends</h4>
-                    <p>Interactive charts coming soon...</p>
+                <div class="charts-container">
+                    <div class="chart-section">
+                        <h4>Weekly Conversations</h4>
+                        <div class="chart-wrapper">
+                            <canvas id="weeklyConversationsChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-section">
+                        <h4>Response Time Trends</h4>
+                        <div class="chart-wrapper">
+                            <canvas id="responseTimeChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-section">
+                        <h4>Channel Distribution</h4>
+                        <div class="chart-wrapper">
+                            <canvas id="channelDistributionChart"></canvas>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -710,6 +792,7 @@
                 displayConversations(conversations.conversations);
                 displayChannelStats(analytics.channel_distribution);
                 displayAIInsights();
+                initializeCharts();
                 
             } catch (error) {
                 console.error('Failed to load dashboard:', error);
@@ -773,6 +856,278 @@
             container.innerHTML = insights.map(insight => 
                 `<div style="background: ${bgColor}; padding: 12px; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid ${borderColor};">${insight}</div>`
             ).join('');
+        }
+
+        // Chart initialization and demo data
+        function initializeCharts() {
+            const isDark = document.body.classList.contains('dark-theme');
+            const chartColors = {
+                primary: isDark ? '#00E5A0' : '#1B365D',
+                secondary: isDark ? '#4DEFB8' : '#3a5a87',
+                success: '#28a745',
+                warning: '#ffc107',
+                danger: '#dc3545',
+                info: '#17a2b8',
+                grid: isDark ? '#444' : '#e9ecef',
+                text: isDark ? '#e0e0e0' : '#1B365D'
+            };
+
+            // Configure global chart defaults
+            Chart.defaults.color = chartColors.text;
+            Chart.defaults.borderColor = chartColors.grid;
+            Chart.defaults.backgroundColor = chartColors.primary;
+
+            createWeeklyConversationsChart(chartColors);
+            createResponseTimeChart(chartColors);
+            createChannelDistributionChart(chartColors);
+        }
+
+        function createWeeklyConversationsChart(colors) {
+            const ctx = document.getElementById('weeklyConversationsChart').getContext('2d');
+            
+            // Demo data for the past 7 days
+            const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const conversationData = [45, 62, 38, 78, 95, 33, 41];
+            const resolvedData = [42, 58, 35, 75, 89, 31, 38];
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'New Conversations',
+                        data: conversationData,
+                        borderColor: colors.primary,
+                        backgroundColor: colors.primary + '20',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: colors.primary,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6
+                    }, {
+                        label: 'Resolved',
+                        data: resolvedData,
+                        borderColor: colors.success,
+                        backgroundColor: colors.success + '20',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: colors.success,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: colors.text + 'dd',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: colors.primary,
+                            borderWidth: 1
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: colors.grid + '40'
+                            },
+                            ticks: {
+                                color: colors.text
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: colors.text
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+        }
+
+        function createResponseTimeChart(colors) {
+            const ctx = document.getElementById('responseTimeChart').getContext('2d');
+            
+            // Demo data for response times over the week
+            const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const avgResponseTime = [125, 98, 142, 89, 76, 156, 134];
+            const targetTime = new Array(7).fill(120); // 2 minute target
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Avg Response Time (seconds)',
+                        data: avgResponseTime,
+                        backgroundColor: avgResponseTime.map(time => 
+                            time > 120 ? colors.warning + '80' : colors.success + '80'
+                        ),
+                        borderColor: avgResponseTime.map(time => 
+                            time > 120 ? colors.warning : colors.success
+                        ),
+                        borderWidth: 2,
+                        borderRadius: 4,
+                        borderSkipped: false
+                    }, {
+                        label: 'Target (120s)',
+                        data: targetTime,
+                        type: 'line',
+                        borderColor: colors.danger,
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        pointStyle: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: colors.text + 'dd',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: colors.primary,
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    if (context.datasetIndex === 0) {
+                                        const time = context.parsed.y;
+                                        const minutes = Math.floor(time / 60);
+                                        const seconds = time % 60;
+                                        return `Response Time: ${minutes}m ${seconds}s`;
+                                    }
+                                    return context.dataset.label + ': ' + context.parsed.y + 's';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: colors.grid + '40'
+                            },
+                            ticks: {
+                                color: colors.text,
+                                callback: function(value) {
+                                    return value + 's';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: colors.text
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createChannelDistributionChart(colors) {
+            const ctx = document.getElementById('channelDistributionChart').getContext('2d');
+            
+            // Demo data for channel distribution
+            const channelData = {
+                labels: ['Telegram', 'Email', 'WhatsApp', 'Slack', 'Direct API'],
+                datasets: [{
+                    data: [35, 28, 22, 10, 5],
+                    backgroundColor: [
+                        colors.primary + 'cc',
+                        colors.success + 'cc',
+                        colors.info + 'cc',
+                        colors.warning + 'cc',
+                        colors.secondary + 'cc'
+                    ],
+                    borderColor: [
+                        colors.primary,
+                        colors.success,
+                        colors.info,
+                        colors.warning,
+                        colors.secondary
+                    ],
+                    borderWidth: 2,
+                    hoverOffset: 8
+                }]
+            };
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: channelData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: colors.text + 'dd',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: colors.primary,
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '50%',
+                    animation: {
+                        animateRotate: true,
+                        animateScale: true
+                    }
+                }
+            });
         }
 
         function toggleTheme() {
